@@ -6,37 +6,28 @@ import z, { url } from "zod";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { prisma } from "./db";
 import { getPrismaClient } from "@prisma/client/runtime/client";
+import { middleware } from "./middleware";
+import cors from "cors"
 
 const client = tavily({ apiKey: process.env  .TAVILY_API_key });
 const app = express();
 app.use(express.json());
+app.use(cors())
 
 
-
-app.post("/signup", async (req, res) => {
-
+app.get("/conversations", middleware, async (req, res) => {
+  res.json({
+    userId: req.userId
+  })
 })
 
-
-app.post("/signin", async (req, res) => {
-  
-})
-
-
-app.get("/conversations", async (req, res) => {
-  
-})
-
-app.post("/converasation/:conversationId", async (req, res) => {
+app.post("/converasation/:conversationId", middleware, async (req, res) => {
   
 })
 
 
 
-
-
-
-  app.post("/purplexity_ask", async (req, res) => {
+  app.post("/purplexity_ask", middleware, async (req, res) => {
   const query = req.body.query;
 
   const webSearchResponse = await client.search(query, {
@@ -72,10 +63,10 @@ res.write("\nSOURCES\n")
 res.end()
 });
 
-app.post("/purplexity_ask/follow_up", async (req, res) => {
+app.post("/purplexity_ask/follow_up", middleware, async (req, res) => {
   
 })
 
 
-app.listen(3000);
+app.listen(3001);
 
