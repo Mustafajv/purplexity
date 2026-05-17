@@ -350,6 +350,12 @@ app.patch("/conversation/:conversationId", middleware, async (req, res) => {
   }
 });
 
-app.listen(3001, () => {
+const server = app.listen(3001, () => {
   console.log("🟣 Purplexity backend running on http://localhost:3001");
 });
+
+void server;
+
+// Bun's Node HTTP compatibility can let this Express process exit after listen().
+// Keep one timer referenced so the API stays available during local development.
+setInterval(() => {}, 60_000);

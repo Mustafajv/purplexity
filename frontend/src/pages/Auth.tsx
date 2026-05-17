@@ -21,21 +21,15 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden">
-      {/* Background ambient glow */}
-      <div
-        className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse, rgba(167,139,250,0.08) 0%, rgba(167,139,250,0.02) 40%, transparent 70%)",
-        }}
-      />
+    <div className="min-h-screen flex items-center justify-center px-6 relative overflow-hidden bg-[var(--background)]">
+      <div className="pointer-events-none absolute inset-x-8 top-16 h-px bg-[linear-gradient(90deg,transparent,var(--edge-strong),transparent)]" />
+      <div className="pointer-events-none absolute bottom-24 left-1/2 h-40 w-px rotate-45 bg-[linear-gradient(180deg,transparent,var(--accent-warm),transparent)] opacity-40" />
 
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo / Brand */}
         <div className="text-center mb-10">
           {/* Icon */}
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[var(--primary)] mb-6 animate-pulse-glow">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-[var(--primary)] mb-6 shadow-[0_18px_45px_-24px_var(--glow-strong)] animate-pulse-glow">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
               <path
                 d="M12 2L2 7L12 12L22 7L12 2Z"
@@ -61,7 +55,7 @@ export default function Auth() {
             </svg>
           </div>
 
-          <h1 className="font-display text-4xl italic text-[var(--foreground)] mb-2">
+          <h1 className="font-display text-4xl font-semibold tracking-tight text-[var(--foreground)] mb-2">
             purplexity
           </h1>
           <p className="text-sm text-[var(--muted-foreground)] max-w-xs mx-auto leading-relaxed">
@@ -74,14 +68,16 @@ export default function Auth() {
         {/* Auth buttons */}
         <div className="space-y-3">
           <button
+            type="button"
             onClick={signInWithGoogle}
             className="
               group w-full flex items-center justify-center gap-3
-              px-6 py-3.5 rounded-xl
-              bg-white text-[#1a1a1a]
+              px-6 py-3.5 rounded-lg
+              bg-[#f2efe5] text-[#17201c]
               font-medium text-sm
               transition-all duration-200
-              hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]
+              cursor-pointer
+              hover:shadow-[0_18px_36px_-28px_rgba(242,239,229,0.8)]
               hover:scale-[1.01]
               active:scale-[0.99]
             "
@@ -108,15 +104,17 @@ export default function Auth() {
           </button>
 
           <button
+            type="button"
             onClick={signInWithGithub}
             className="
               group w-full flex items-center justify-center gap-3
-              px-6 py-3.5 rounded-xl
-              bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.08)]
+              px-6 py-3.5 rounded-lg
+              bg-[var(--surface-glass)] border border-[var(--border)]
               text-[var(--foreground)]
               font-medium text-sm
               transition-all duration-200
-              hover:border-[rgba(255,255,255,0.16)]
+              cursor-pointer
+              hover:border-[var(--edge-strong)]
               hover:bg-[var(--surface-glass-hover)]
               hover:scale-[1.01]
               active:scale-[0.99]

@@ -16,7 +16,7 @@ export function SourcesList({ sources }: SourcesListProps) {
     <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-7 h-7 rounded-lg bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)] flex items-center justify-center">
+        <div className="w-7 h-7 rounded-md bg-[var(--surface-glass)] border border-[var(--border)] flex items-center justify-center">
           <Globe className="w-3.5 h-3.5 text-[var(--muted-foreground)]" />
         </div>
         <h2 className="text-sm font-medium text-[var(--muted-foreground)] uppercase tracking-widest">
@@ -45,10 +45,11 @@ export function SourcesList({ sources }: SourcesListProps) {
               rel="noopener noreferrer"
               className="
                 group/source flex items-center gap-2 
-                px-3 py-2 rounded-xl
-                bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)]
-                hover:border-[rgba(255,255,255,0.12)] hover:bg-[var(--surface-glass-hover)]
+                px-3 py-2 rounded-lg
+                bg-[var(--surface-glass)] border border-[var(--border)]
+                hover:border-[var(--edge-strong)] hover:bg-[var(--surface-glass-hover)]
                 transition-all duration-200
+                cursor-pointer
                 max-w-[280px]
               "
               style={{ animationDelay: `${i * 0.05}s` }}

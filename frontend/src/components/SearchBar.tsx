@@ -51,11 +51,11 @@ export function SearchBar({
         className={`
           relative flex items-center gap-3
           bg-[var(--surface-glass)] backdrop-blur-sm
-          border border-[rgba(255,255,255,0.06)]
-          rounded-2xl
+          border border-[var(--border)]
+          rounded-lg
           transition-all duration-300 ease-out
-          hover:border-[rgba(255,255,255,0.12)]
-          focus-within:border-[var(--primary)] focus-within:shadow-[0_0_0_1px_var(--primary),0_0_30px_-5px_var(--glow)]
+          hover:border-[var(--edge-strong)]
+          focus-within:border-[var(--primary)] focus-within:shadow-[0_0_0_1px_var(--primary),0_18px_60px_-36px_var(--glow-strong)]
           ${compact ? "px-4 py-3" : "px-6 py-4"}
         `}
       >
@@ -73,6 +73,7 @@ export function SearchBar({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
+          aria-label={placeholder}
           rows={1}
           disabled={isStreaming}
           className={`
@@ -88,12 +89,14 @@ export function SearchBar({
 
         <button
           type="submit"
+          aria-label={compact ? "Submit follow-up" : "Submit search"}
           disabled={!query.trim() || isStreaming}
           className={`
             flex-shrink-0 flex items-center justify-center
-            rounded-xl
+            rounded-md
             bg-[var(--primary)] text-[var(--primary-foreground)]
             transition-all duration-200
+            cursor-pointer
             hover:opacity-90 hover:scale-105
             disabled:opacity-30 disabled:scale-100 disabled:cursor-not-allowed
             active:scale-95
@@ -125,9 +128,10 @@ export function SearchBar({
       {/* Subtle glow underneath */}
       {!compact && (
         <div
-          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-8 rounded-full opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none"
+          className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3/4 h-px opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none"
           style={{
-            background: "radial-gradient(ellipse, var(--glow) 0%, transparent 70%)",
+            background:
+              "linear-gradient(90deg, transparent 0%, var(--glow) 35%, var(--accent-warm) 55%, transparent 100%)",
           }}
         />
       )}

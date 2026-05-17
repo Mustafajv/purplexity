@@ -13,7 +13,7 @@ export function AnswerDisplay({ answer, isStreaming }: AnswerDisplayProps) {
     <div className="animate-fade-in">
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-5">
-        <div className="w-7 h-7 rounded-lg bg-[var(--primary)] flex items-center justify-center">
+        <div className="w-7 h-7 rounded-md bg-[var(--primary)] flex items-center justify-center">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
             <path
               d="M12 2L2 7L12 12L22 7L12 2Z"

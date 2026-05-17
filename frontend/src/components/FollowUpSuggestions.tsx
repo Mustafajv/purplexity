@@ -17,7 +17,7 @@ export function FollowUpSuggestions({
     <div className="animate-fade-in" style={{ animationDelay: "0.2s" }}>
       {/* Header */}
       <div className="flex items-center gap-2.5 mb-4">
-        <div className="w-7 h-7 rounded-lg bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)] flex items-center justify-center">
+        <div className="w-7 h-7 rounded-md bg-[var(--surface-glass)] border border-[var(--border)] flex items-center justify-center">
           <Sparkles className="w-3.5 h-3.5 text-[var(--primary)]" />
         </div>
         <h2 className="text-sm font-medium text-[var(--muted-foreground)] uppercase tracking-widest">
@@ -28,14 +28,16 @@ export function FollowUpSuggestions({
       <div className="flex flex-col gap-2">
         {followUps.map((q, i) => (
           <button
+            type="button"
             key={i}
             onClick={() => onSelect(q)}
             disabled={disabled}
             className="
-              group/fu text-left px-4 py-3 rounded-xl
-              bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)]
-              hover:border-[var(--primary)] hover:bg-[rgba(167,139,250,0.05)]
+              group/fu text-left px-4 py-3 rounded-lg
+              bg-[var(--surface-glass)] border border-[var(--border)]
+              hover:border-[var(--primary)] hover:bg-[rgba(89,215,189,0.07)]
               transition-all duration-200
+              cursor-pointer
               disabled:opacity-50 disabled:cursor-not-allowed
               text-sm text-[var(--muted-foreground)]
               hover:text-[var(--foreground)]

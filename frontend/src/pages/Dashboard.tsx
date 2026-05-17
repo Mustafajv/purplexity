@@ -73,14 +73,14 @@ export default function Dashboard() {
   if (!user) return null;
 
   return (
-    <div className="h-screen flex overflow-hidden">
+    <div className="h-screen flex overflow-hidden bg-[var(--background)]">
       {/* ── Sidebar ──────────────────────────────── */}
       <aside
         className={`
           ${sidebarOpen ? "w-72" : "w-0"}
           flex-shrink-0 overflow-hidden
           transition-all duration-300 ease-out
-          border-r border-[rgba(255,255,255,0.04)]
+          border-r border-[var(--sidebar-border)]
           bg-[var(--sidebar)]
         `}
       >
@@ -88,10 +88,11 @@ export default function Dashboard() {
           {/* Logo + New */}
           <div className="flex items-center justify-between mb-6">
             <button
+              type="button"
               onClick={handleNewSearch}
-              className="flex items-center gap-2.5 group"
+              className="flex items-center gap-2.5 group cursor-pointer"
             >
-              <div className="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center transition-transform group-hover:scale-105">
+              <div className="w-8 h-8 rounded-md bg-[var(--primary)] shadow-[0_12px_30px_-18px_var(--glow-strong)] flex items-center justify-center transition-transform group-hover:scale-105">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                   <path
                     d="M12 2L2 7L12 12L22 7L12 2Z"
@@ -109,18 +110,21 @@ export default function Dashboard() {
                   />
                 </svg>
               </div>
-              <span className="font-display text-lg italic text-[var(--foreground)]">
+              <span className="font-display text-lg font-semibold tracking-tight text-[var(--foreground)]">
                 purplexity
               </span>
             </button>
 
             <button
+              type="button"
               onClick={handleNewSearch}
+              aria-label="Start a new search"
               className="
                 p-2 rounded-lg
                 hover:bg-[var(--surface-glass-hover)]
                 text-[var(--muted-foreground)] hover:text-[var(--foreground)]
                 transition-all duration-200
+                cursor-pointer
               "
               title="New Search"
             >
@@ -139,9 +143,9 @@ export default function Dashboard() {
           </div>
 
           {/* User footer */}
-          <div className="pt-4 mt-4 border-t border-[rgba(255,255,255,0.04)]">
+          <div className="pt-4 mt-4 border-t border-[var(--sidebar-border)]">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)] flex items-center justify-center text-xs font-medium text-[var(--muted-foreground)]">
+              <div className="w-8 h-8 rounded-full bg-[var(--surface-glass)] border border-[var(--edge-strong)] flex items-center justify-center text-xs font-medium text-[var(--muted-foreground)]">
                 {user.email?.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -155,12 +159,15 @@ export default function Dashboard() {
                 )}
               </div>
               <button
+                type="button"
                 onClick={signOut}
+                aria-label="Sign out"
                 className="
                   p-2 rounded-lg
                   hover:bg-[rgba(239,68,68,0.1)]
                   text-[var(--muted-foreground)] hover:text-red-400
                   transition-all duration-200
+                  cursor-pointer
                 "
                 title="Sign Out"
               >
@@ -174,14 +181,17 @@ export default function Dashboard() {
       {/* ── Main Content ─────────────────────────── */}
       <main className="flex-1 flex flex-col h-full relative overflow-hidden">
         {/* Top bar */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-[rgba(255,255,255,0.04)]">
+        <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--border)] bg-[rgba(18,31,26,0.72)] backdrop-blur-xl">
           <button
+            type="button"
             onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
             className="
               p-2 rounded-lg
               hover:bg-[var(--surface-glass-hover)]
               text-[var(--muted-foreground)] hover:text-[var(--foreground)]
               transition-all duration-200
+              cursor-pointer
             "
           >
             {sidebarOpen ? (
@@ -202,19 +212,13 @@ export default function Dashboard() {
         {view === "home" ? (
           /* ── Home / Search View ── */
           <div className="flex-1 flex flex-col items-center justify-center px-6 pb-24">
-            {/* Ambient glow */}
-            <div
-              className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse, rgba(167,139,250,0.06) 0%, rgba(167,139,250,0.01) 50%, transparent 70%)",
-              }}
-            />
+            <div className="pointer-events-none absolute left-8 right-8 top-8 h-px bg-[linear-gradient(90deg,transparent,var(--edge-strong),transparent)]" />
+            <div className="pointer-events-none absolute bottom-20 left-1/2 h-48 w-px -rotate-45 bg-[linear-gradient(180deg,transparent,var(--accent-warm),transparent)] opacity-40" />
 
             <div className="w-full max-w-3xl animate-fade-in relative z-10">
               {/* Hero text */}
               <div className="text-center mb-10">
-                <h1 className="font-display text-5xl md:text-6xl italic text-[var(--foreground)] mb-4">
+                <h1 className="font-display text-5xl md:text-6xl font-semibold tracking-tight text-[var(--foreground)] mb-4">
                   What do you want
                   <br />
                   <span className="text-[var(--primary)]">to know?</span>
@@ -243,15 +247,17 @@ export default function Dashboard() {
                   "How does RAG work?",
                 ].map((suggestion) => (
                   <button
+                    type="button"
                     key={suggestion}
                     onClick={() => handleSearch(suggestion)}
                     className="
                       px-4 py-2 rounded-full text-xs
-                      bg-[var(--surface-glass)] border border-[rgba(255,255,255,0.06)]
+                      bg-[var(--surface-glass)] border border-[var(--border)]
                       text-[var(--muted-foreground)]
-                      hover:border-[rgba(255,255,255,0.12)] hover:text-[var(--foreground)]
+                      hover:border-[var(--edge-strong)] hover:text-[var(--foreground)]
                       hover:bg-[var(--surface-glass-hover)]
                       transition-all duration-200
+                      cursor-pointer
                     "
                   >
                     {suggestion}
@@ -269,14 +275,14 @@ export default function Dashboard() {
             <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
               {/* User query */}
               <div className="animate-fade-in">
-                <h1 className="font-display text-2xl md:text-3xl italic text-[var(--foreground)]">
+                <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
                   {currentQuery}
                 </h1>
               </div>
 
               {/* Error */}
               {search.error && (
-                <div className="px-4 py-3 rounded-xl bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.2)] text-red-400 text-sm animate-fade-in">
+                <div className="px-4 py-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.2)] text-red-400 text-sm animate-fade-in">
                   {search.error}
                 </div>
               )}
@@ -310,7 +316,7 @@ export default function Dashboard() {
               {/* Follow-up search bar */}
               {!search.isStreaming && search.answer && (
                 <div
-                  className="pt-4 border-t border-[rgba(255,255,255,0.04)] animate-fade-in"
+                  className="pt-4 border-t border-[var(--border)] animate-fade-in"
                   style={{ animationDelay: "0.3s" }}
                 >
                   <SearchBar
