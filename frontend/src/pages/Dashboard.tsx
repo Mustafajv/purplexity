@@ -36,12 +36,15 @@ export default function Dashboard() {
     }
   }, [user, authLoading, navigate]);
 
-  // Scroll to top when new results come in
+  // Keep the newest turn reachable when a conversation grows.
   useEffect(() => {
-    if (search.answer && resultsRef.current) {
-      resultsRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    if (view === "results" && resultsRef.current) {
+      resultsRef.current.scrollTo({
+        top: resultsRef.current.scrollHeight,
+        behavior: "smooth",
+      });
     }
-  }, [search.answer]);
+  }, [search.messages.length, view]);
 
   const handleSearch = async (query: string) => {
     setCurrentQuery(query);
@@ -285,13 +288,6 @@ export default function Dashboard() {
             className="flex-1 overflow-y-auto"
           >
             <div className="max-w-3xl mx-auto px-6 py-8 space-y-8">
-              {/* User query */}
-              <div className="animate-fade-in">
-                <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
-                  {currentQuery}
-                </h1>
-              </div>
-
               {/* Error */}
               {search.error && (
                 <div className="px-4 py-3 rounded-lg bg-[rgba(239,68,68,0.1)] border border-[rgba(239,68,68,0.2)] text-red-400 text-sm animate-fade-in">
@@ -299,24 +295,61 @@ export default function Dashboard() {
                 </div>
               )}
 
-              {/* Loading shimmer */}
-              {search.isStreaming && !search.answer && (
-                <div className="space-y-4">
-                  <div className="h-4 w-3/4 rounded bg-[var(--surface-glass)] animate-shimmer" />
-                  <div className="h-4 w-full rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.1s" }} />
-                  <div className="h-4 w-5/6 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.2s" }} />
-                  <div className="h-4 w-2/3 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.3s" }} />
+              {search.messages.length > 0 ? (
+                <div className="space-y-10">
+                  {search.messages.map((message) =>
+                    message.role === "User" ? (
+                      <div key={message.id} className="animate-fade-in">
+                        <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
+                          {message.content}
+                        </h1>
+                      </div>
+                    ) : (
+                      <div key={message.id} className="space-y-5">
+                        {message.isStreaming && !message.content ? (
+                          <div className="space-y-4">
+                            <div className="h-4 w-3/4 rounded bg-[var(--surface-glass)] animate-shimmer" />
+                            <div className="h-4 w-full rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.1s" }} />
+                            <div className="h-4 w-5/6 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.2s" }} />
+                            <div className="h-4 w-2/3 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.3s" }} />
+                          </div>
+                        ) : (
+                          <AnswerDisplay
+                            answer={message.content}
+                            isStreaming={Boolean(message.isStreaming)}
+                          />
+                        )}
+
+                        <SourcesList sources={message.sources} />
+                      </div>
+                    ),
+                  )}
                 </div>
+              ) : (
+                <>
+                  <div className="animate-fade-in">
+                    <h1 className="font-display text-2xl md:text-3xl font-semibold tracking-tight text-[var(--foreground)]">
+                      {currentQuery}
+                    </h1>
+                  </div>
+
+                  {search.isStreaming && !search.answer && (
+                    <div className="space-y-4">
+                      <div className="h-4 w-3/4 rounded bg-[var(--surface-glass)] animate-shimmer" />
+                      <div className="h-4 w-full rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.1s" }} />
+                      <div className="h-4 w-5/6 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.2s" }} />
+                      <div className="h-4 w-2/3 rounded bg-[var(--surface-glass)] animate-shimmer" style={{ animationDelay: "0.3s" }} />
+                    </div>
+                  )}
+
+                  <AnswerDisplay
+                    answer={search.answer}
+                    isStreaming={search.isStreaming}
+                  />
+
+                  <SourcesList sources={search.sources} />
+                </>
               )}
-
-              {/* Answer */}
-              <AnswerDisplay
-                answer={search.answer}
-                isStreaming={search.isStreaming}
-              />
-
-              {/* Sources */}
-              <SourcesList sources={search.sources} />
 
               {/* Follow-ups */}
               <FollowUpSuggestions

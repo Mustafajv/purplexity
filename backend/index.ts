@@ -55,6 +55,9 @@ app.get("/conversations", middleware, async (req, res) => {
         messages: {
           orderBy: { createdAt: "desc" },
           take: 1,
+          include: {
+            sources: true,
+          },
         },
       },
     });
