@@ -3,6 +3,7 @@ import { ExternalLink, Globe } from "lucide-react";
 interface Source {
   url: string;
   title: string;
+  faviconUrl?: string;
 }
 
 interface SourcesListProps {
@@ -55,7 +56,7 @@ export function SourcesList({ sources }: SourcesListProps) {
               style={{ animationDelay: `${i * 0.05}s` }}
             >
               <img
-                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+                src={source.faviconUrl || `https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
                 alt=""
                 className="w-4 h-4 rounded-sm flex-shrink-0"
                 onError={(e) => {

@@ -56,6 +56,18 @@ export default function Dashboard() {
     await search.followUp(query, search.conversationId);
   };
 
+  const handleSelectConversation = async (conversationId: string) => {
+    const conversation = await search.loadConversation(conversationId);
+    if (!conversation) return;
+
+    const latestUserMessage = [...conversation.messages]
+      .reverse()
+      .find((message) => message.role === "User");
+
+    setCurrentQuery(latestUserMessage?.content ?? conversation.title ?? "Conversation");
+    setView("results");
+  };
+
   const handleNewSearch = () => {
     search.reset();
     setView("home");
@@ -138,7 +150,7 @@ export default function Dashboard() {
               conversations={conversations}
               loading={convLoading}
               onDelete={deleteConversation}
-              onSelect={() => {}}
+              onSelect={(conversation) => handleSelectConversation(conversation.id)}
             />
           </div>
 

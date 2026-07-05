@@ -4,6 +4,22 @@ import { BACKEND_URL } from "@/lib/config";
 interface Source {
   url: string;
   title: string;
+  faviconUrl?: string;
+}
+
+interface ConversationMessage {
+  id?: number;
+  content: string;
+  role: string;
+  createdAt: string;
+  sources?: Source[];
+}
+
+export interface LoadedConversation {
+  id: string;
+  title: string | null;
+  slug: string;
+  messages: ConversationMessage[];
 }
 
 interface UseSearchResult {
@@ -15,6 +31,7 @@ interface UseSearchResult {
   error: string | null;
   ask: (query: string) => Promise<void>;
   followUp: (query: string, convId: string) => Promise<void>;
+  loadConversation: (convId: string) => Promise<LoadedConversation | null>;
   reset: () => void;
 }
 
@@ -167,6 +184,57 @@ export function useSearch(getAccessToken: () => Promise<string | null>): UseSear
     [streamResponse],
   );
 
+  const loadConversation = useCallback(
+    async (convId: string) => {
+      abortRef.current?.abort();
+      setIsStreaming(false);
+      setError(null);
+      setAnswer("");
+      setSources([]);
+      setFollowUps([]);
+
+      try {
+        const token = await getAccessToken();
+        if (!token) {
+          setError("Please sign in to load conversations");
+          return null;
+        }
+
+        const response = await fetch(`${BACKEND_URL}/conversation/${convId}`, {
+          headers: { Authorization: token },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const conversation = data.conversation as LoadedConversation | undefined;
+        if (!conversation) {
+          throw new Error("Conversation not found");
+        }
+
+        const latestAssistant = [...conversation.messages]
+          .reverse()
+          .find((message) => message.role === "Assistant");
+
+        if (latestAssistant) {
+          const parsed = parseResponse(latestAssistant.content);
+          setAnswer(parsed.answer);
+          setFollowUps(parsed.followUps);
+          setSources(latestAssistant.sources ?? []);
+        }
+
+        setConversationId(conversation.id);
+        return conversation;
+      } catch (e: any) {
+        setError(e.message || "Failed to load conversation");
+        return null;
+      }
+    },
+    [getAccessToken],
+  );
+
   const reset = useCallback(() => {
     abortRef.current?.abort();
     setAnswer("");
@@ -186,6 +254,7 @@ export function useSearch(getAccessToken: () => Promise<string | null>): UseSear
     error,
     ask,
     followUp,
+    loadConversation,
     reset,
   };
 }

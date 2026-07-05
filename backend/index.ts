@@ -18,6 +18,31 @@ const openrouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
+type SearchSource = {
+  url: string;
+  title: string;
+  faviconUrl: string;
+};
+
+function getFaviconUrl(url: string) {
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, "");
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(domain)}&sz=32`;
+  } catch {
+    return "";
+  }
+}
+
+function toSearchSources(results: { url?: string; title?: string }[]): SearchSource[] {
+  return results
+    .filter((result): result is { url: string; title?: string } => Boolean(result.url))
+    .map((result) => ({
+      url: result.url,
+      title: result.title ?? result.url,
+      faviconUrl: getFaviconUrl(result.url),
+    }));
+}
+
 // ──────────────────────────────────────────────
 // GET /conversations — list all conversations for the authenticated user
 // ──────────────────────────────────────────────
@@ -55,6 +80,9 @@ app.get("/conversation/:conversationId", middleware, async (req, res) => {
       include: {
         messages: {
           orderBy: { createdAt: "asc" },
+          include: {
+            sources: true,
+          },
         },
       },
     });
@@ -150,6 +178,7 @@ app.post("/purplexity_ask", middleware, async (req, res) => {
     });
 
     const webSearchResult = webSearchResponse.results;
+    const sources = toSearchSources(webSearchResult);
 
     // 4. Build prompt and stream LLM response
     const prompt = PROMPT_TEMPLATE.replace(
@@ -179,21 +208,26 @@ app.post("/purplexity_ask", middleware, async (req, res) => {
 
     // 6. Send sources
     res.write("\nSOURCES\n");
-    res.write(
-      JSON.stringify(
-        webSearchResult.map((r) => ({ url: r.url, title: r.title })),
-      ),
-    );
+    res.write(JSON.stringify(sources));
     res.write("\nSOURCES\n");
 
     // 7. Save assistant message to DB
-    await prisma.message.create({
+    const assistantMessage = await prisma.message.create({
       data: {
         content: fullResponse,
         role: "Assistant",
         conversationId: conversation.id,
       },
     });
+
+    if (sources.length > 0) {
+      await prisma.source.createMany({
+        data: sources.map((source) => ({
+          ...source,
+          messageId: assistantMessage.id,
+        })),
+      });
+    }
 
     res.end();
   } catch (e) {
@@ -256,6 +290,7 @@ app.post("/purplexity_ask/follow_up", middleware, async (req, res) => {
     });
 
     const webSearchResult = webSearchResponse.results;
+    const sources = toSearchSources(webSearchResult);
 
     // 4. Build conversation history for context
     const conversationHistory = conversation.messages
@@ -286,21 +321,26 @@ app.post("/purplexity_ask/follow_up", middleware, async (req, res) => {
 
     // 6. Send sources
     res.write("\nSOURCES\n");
-    res.write(
-      JSON.stringify(
-        webSearchResult.map((r) => ({ url: r.url, title: r.title })),
-      ),
-    );
+    res.write(JSON.stringify(sources));
     res.write("\nSOURCES\n");
 
     // 7. Save assistant response
-    await prisma.message.create({
+    const assistantMessage = await prisma.message.create({
       data: {
         content: fullResponse,
         role: "Assistant",
         conversationId: conversation.id,
       },
     });
+
+    if (sources.length > 0) {
+      await prisma.source.createMany({
+        data: sources.map((source) => ({
+          ...source,
+          messageId: assistantMessage.id,
+        })),
+      });
+    }
 
     res.end();
   } catch (e) {
