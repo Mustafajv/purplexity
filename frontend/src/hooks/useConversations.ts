@@ -8,14 +8,25 @@ export interface Conversation {
   messages: { content: string; role: string; createdAt: string }[];
 }
 
-export function useConversations(getAccessToken: () => Promise<string | null>) {
+export function useConversations(
+  getAccessToken: () => Promise<string | null>,
+  enabled = true,
+) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
 
   const fetchConversations = useCallback(async () => {
+    if (!enabled) {
+      setConversations([]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     try {
       const token = await getAccessToken();
       if (!token) {
+        setConversations([]);
         setLoading(false);
         return;
       }
@@ -33,7 +44,7 @@ export function useConversations(getAccessToken: () => Promise<string | null>) {
     } finally {
       setLoading(false);
     }
-  }, [getAccessToken]);
+  }, [enabled, getAccessToken]);
 
   useEffect(() => {
     fetchConversations();

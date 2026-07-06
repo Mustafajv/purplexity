@@ -17,17 +17,51 @@ import { useNavigate } from "react-router";
 
 type View = "home" | "results";
 
+const SUGGESTION_ROTATION_MS = 20_000;
+const SUGGESTION_GROUPS = [
+  [
+    "Latest AI tools this week",
+    "Compare React and Svelte",
+    "Plan a Karachi weekend",
+    "Debug a TypeScript error",
+  ],
+  [
+    "Summarize tech news today",
+    "Best laptop for coding",
+    "Explain vector databases",
+    "Find startup ideas",
+  ],
+  [
+    "What's new in Next.js?",
+    "Learn system design",
+    "Compare cloud providers",
+    "Improve my resume",
+  ],
+  [
+    "Research a product market",
+    "Plan a workout routine",
+    "Explain AI agents",
+    "Find recent papers on RAG",
+  ],
+];
+
+function getSuggestionGroupIndex() {
+  return Math.floor(Date.now() / SUGGESTION_ROTATION_MS) % SUGGESTION_GROUPS.length;
+}
+
 export default function Dashboard() {
   const { user, loading: authLoading, signOut, getAccessToken } = useAuth();
   const navigate = useNavigate();
   const search = useSearch(getAccessToken);
   const { conversations, loading: convLoading, refetch, deleteConversation } =
-    useConversations(getAccessToken);
+    useConversations(getAccessToken, !authLoading && Boolean(user));
 
   const [view, setView] = useState<View>("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [currentQuery, setCurrentQuery] = useState("");
+  const [suggestionGroupIndex, setSuggestionGroupIndex] = useState(getSuggestionGroupIndex);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const suggestions = SUGGESTION_GROUPS[suggestionGroupIndex];
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -45,6 +79,16 @@ export default function Dashboard() {
       });
     }
   }, [search.messages.length, view]);
+
+  useEffect(() => {
+    if (view !== "home") return;
+
+    const intervalId = window.setInterval(() => {
+      setSuggestionGroupIndex((current) => (current + 1) % SUGGESTION_GROUPS.length);
+    }, SUGGESTION_ROTATION_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [view]);
 
   const handleSearch = async (query: string) => {
     setCurrentQuery(query);
@@ -255,18 +299,13 @@ export default function Dashboard() {
                 className="flex flex-wrap justify-center gap-2 mt-8 animate-fade-in"
                 style={{ animationDelay: "0.15s" }}
               >
-                {[
-                  "What's new in React 19?",
-                  "Explain quantum computing",
-                  "Best TypeScript practices",
-                  "How does RAG work?",
-                ].map((suggestion) => (
+                {suggestions.map((suggestion) => (
                   <button
                     type="button"
-                    key={suggestion}
+                    key={`${suggestionGroupIndex}-${suggestion}`}
                     onClick={() => handleSearch(suggestion)}
                     className="
-                      px-4 py-2 rounded-full text-xs
+                      min-h-9 min-w-40 max-w-full px-4 py-2 rounded-full text-xs
                       bg-[var(--surface-glass)] border border-[var(--border)]
                       text-[var(--muted-foreground)]
                       hover:border-[var(--edge-strong)] hover:text-[var(--foreground)]
