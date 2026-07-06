@@ -43,6 +43,58 @@ function toSearchSources(results: { url?: string; title?: string }[]): SearchSou
     }));
 }
 
+async function searchSources(query: string) {
+  const webSearchResponse = await client.search(query, {
+    searchDepth: "advanced",
+  });
+
+  return toSearchSources(webSearchResponse.results);
+}
+
+async function backfillMissingSources(
+  messages: {
+    id: number;
+    content: string;
+    role: string;
+    sources?: unknown[];
+  }[],
+) {
+  let latestUserQuery = "";
+  let didBackfill = false;
+
+  for (const message of messages) {
+    if (message.role === "User") {
+      latestUserQuery = message.content;
+      continue;
+    }
+
+    if (
+      message.role !== "Assistant" ||
+      !latestUserQuery ||
+      (message.sources?.length ?? 0) > 0
+    ) {
+      continue;
+    }
+
+    try {
+      const sources = await searchSources(latestUserQuery);
+      if (sources.length === 0) continue;
+
+      await prisma.source.createMany({
+        data: sources.map((source) => ({
+          ...source,
+          messageId: message.id,
+        })),
+      });
+      didBackfill = true;
+    } catch (error) {
+      console.error(`Failed to backfill sources for message ${message.id}:`, error);
+    }
+  }
+
+  return didBackfill;
+}
+
 // ──────────────────────────────────────────────
 // GET /conversations — list all conversations for the authenticated user
 // ──────────────────────────────────────────────
@@ -95,7 +147,28 @@ app.get("/conversation/:conversationId", middleware, async (req, res) => {
       return;
     }
 
-    res.json({ conversation });
+    const didBackfill = await backfillMissingSources(conversation.messages);
+    if (!didBackfill) {
+      res.json({ conversation });
+      return;
+    }
+
+    const conversationWithSources = await prisma.conversation.findFirst({
+      where: {
+        id: conversationId,
+        userId: req.userId,
+      },
+      include: {
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            sources: true,
+          },
+        },
+      },
+    });
+
+    res.json({ conversation: conversationWithSources ?? conversation });
   } catch (e) {
     console.error("Error fetching conversation:", e);
     res.status(500).json({ error: "Failed to fetch conversation" });
